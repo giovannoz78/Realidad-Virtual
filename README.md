@@ -1,0 +1,141 @@
+[visor_webxr_escenas.html](https://github.com/user-attachments/files/30201913/visor_webxr_escenas.html)
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Visor WebXR — Escenas 360°</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: Georgia, serif; }
+
+    #loading {
+      position: fixed; inset: 0; background: #000; color: #d4af37;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; letter-spacing: 0.15em; z-index: 999;
+      transition: opacity 0.8s ease;
+    }
+
+    #hint {
+      position: fixed; bottom: 24px; left: 0; right: 0; text-align: center;
+      color: rgba(212,175,55,0.85); font-size: 0.85rem; letter-spacing: 0.08em;
+      z-index: 10; pointer-events: none; text-shadow: 0 0 8px rgba(0,0,0,0.8);
+    }
+
+    #scene-nav {
+      position: fixed; top: 20px; left: 0; right: 0;
+      display: flex; justify-content: center; gap: 12px;
+      z-index: 20;
+    }
+
+    #scene-nav button {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(212,175,55,0.5);
+      color: #d4af37;
+      font-family: Georgia, serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #scene-nav button:hover {
+      background: rgba(212,175,55,0.15);
+    }
+
+    #scene-name {
+      position: fixed; top: 70px; left: 0; right: 0; text-align: center;
+      color: rgba(212,175,55,0.9); font-size: 0.95rem; letter-spacing: 0.1em;
+      z-index: 20; pointer-events: none; text-shadow: 0 0 8px rgba(0,0,0,0.8);
+    }
+
+    .a-enter-vr-button { bottom: 24px !important; right: 24px !important; }
+  </style>
+</head>
+<body>
+
+  <div id="loading">CARGANDO&hellip;</div>
+  <div id="hint">Arrastrá para mirar alrededor · Tocá el ícono de gafas para entrar en VR</div>
+
+  <div id="scene-nav">
+    <button onclick="prevScene()">‹ Anterior</button>
+    <button onclick="nextScene()">Siguiente ›</button>
+  </div>
+  <div id="scene-name"></div>
+
+  <a-scene loading-screen="enabled: false" vr-mode-ui="enabled: true">
+    <a-assets>
+      <!--
+        ============================================================
+        ACÁ VAN TUS IMÁGENES. Subí cada archivo .jpg o .png al mismo
+        repositorio de GitHub, en la misma carpeta que este HTML,
+        y agregá una línea <img> por cada escena, con un id único.
+
+        Para AGREGAR una escena nueva:
+          1. Subí el archivo de imagen al repo (ej: escena4.jpg)
+          2. Agregá una línea acá abajo: <img id="escena4" src="escena4.jpg">
+          3. Agregá su nombre a la lista SCENES más abajo, en el script
+
+        Para CAMBIAR una escena existente:
+          - Simplemente subí un archivo nuevo con el MISMO nombre
+            (ej: reemplazá laberinto.jpg por otro laberinto.jpg),
+            sin tocar nada de este código.
+        ============================================================
+      -->
+      <img id="escena1" src="escena1.jpg">
+      <img id="escena2" src="escena2.jpg">
+      <img id="escena3" src="escena3.jpg">
+    </a-assets>
+
+    <a-sky id="sky" src="#escena1" rotation="0 -90 0"></a-sky>
+
+    <a-camera position="0 1.6 0" wasd-controls-enabled="false">
+      <a-cursor fuse="false" color="#d4af37"></a-cursor>
+    </a-camera>
+  </a-scene>
+
+  <script>
+    // ============================================================
+    // LISTA DE ESCENAS
+    // Cada entrada acá tiene que coincidir con un id de <img> de arriba,
+    // y un nombre para mostrar en pantalla.
+    // Orden = orden en que aparecen al navegar con los botones.
+    // ============================================================
+    var SCENES = [
+      { id: 'escena1', name: 'Escena 1' },
+      { id: 'escena2', name: 'Escena 2' },
+      { id: 'escena3', name: 'Escena 3' }
+    ];
+
+    var currentIndex = 0;
+
+    function showScene(index) {
+      var sky = document.getElementById('sky');
+      var scene = SCENES[index];
+      sky.setAttribute('src', '#' + scene.id);
+      document.getElementById('scene-name').textContent = scene.name;
+    }
+
+    function nextScene() {
+      currentIndex = (currentIndex + 1) % SCENES.length;
+      showScene(currentIndex);
+    }
+
+    function prevScene() {
+      currentIndex = (currentIndex - 1 + SCENES.length) % SCENES.length;
+      showScene(currentIndex);
+    }
+
+    window.addEventListener('load', function () {
+      showScene(currentIndex);
+      setTimeout(function () {
+        var el = document.getElementById('loading');
+        el.style.opacity = '0';
+        setTimeout(function(){ el.style.display = 'none'; }, 800);
+      }, 400);
+    });
+  </script>
+
+</body>
+</html>
