@@ -49,11 +49,6 @@
 
   <a-scene loading-screen="enabled: false" vr-mode-ui="enabled: true">
     <a-assets>
-      <!--
-        ============================================================
-        IMÁGENES (equirectangular 2:1) — una por escena
-        ============================================================
-      -->
       <img id="escena1" src="escena1.png">
       <img id="escena2" src="escena2.png">
       <img id="escena3" src="escena3.png">
@@ -70,13 +65,6 @@
       <img id="escena14" src="escena14.png">
       <img id="escena15" src="escena15.png">
 
-      <!--
-        ============================================================
-        AUDIO AMBIENTE — un archivo .mp3 por escena, loop.
-        Subí audio1.mp3 ... audio15.mp3 al mismo repo.
-        Si dos escenas comparten ambiente, apuntá al mismo archivo.
-        ============================================================
-      -->
       <audio id="audio1" src="audio1.mp3" preload="auto" loop></audio>
       <audio id="audio2" src="audio2.mp3" preload="auto" loop></audio>
       <audio id="audio3" src="audio3.mp3" preload="auto" loop></audio>
@@ -96,15 +84,6 @@
 
     <a-sky id="sky" src="#escena1" rotation="0 -90 0"></a-sky>
 
-    <!--
-      ============================================================
-      HOTSPOTS DE NAVEGACIÓN — flotan sobre el piso.
-      "hotspot-forward" avanza a la siguiente escena.
-      "hotspot-back" vuelve a la anterior.
-      Reposicioná el z si en alguna escena el punto de fuga
-      del piso queda en otro lado (ej. "0 0.01 -2" más cerca).
-      ============================================================
-    -->
     <a-entity id="hotspot-forward" class="clickable" position="0 0.01 -3"
       geometry="primitive: ring; radiusInner: 0.18; radiusOuter: 0.28"
       material="color: #d4af37; opacity: 0.55; side: double; shader: flat"
@@ -121,15 +100,13 @@
         repeat="indefinite" to="1.15 1.15 1.15" easing="ease-in-out-sine"></a-animation>
     </a-entity>
 
-    <a-camera position="0 1.6 0" wasd-controls-enabled="false">
-      <a-cursor fuse="false" color="#d4af37" raycaster="objects: .clickable"></a-cursor>
-    </a-camera>
+    <a-camera position="0 1.6 0" wasd-controls-enabled="false"></a-camera>
+
+    <a-entity cursor="rayOrigin: mouse"
+      raycaster="objects: .clickable; far: 20"></a-entity>
   </a-scene>
 
   <script>
-    // ============================================================
-    // LISTA DE ESCENAS — imgId + audioId en el mismo orden del recorrido
-    // ============================================================
     var SCENES = [
       { imgId: 'escena1',  audioId: 'audio1'  },
       { imgId: 'escena2',  audioId: 'audio2'  },
@@ -169,14 +146,8 @@
         currentAudio.play().catch(function () {});
       }
 
-      // El hotspot de "volver" solo aparece si no es la primera escena
-      document.getElementById('hotspot-back').setAttribute(
-        'visible', index > 0
-      );
-      // El hotspot de "avanzar" solo aparece si no es la última escena
-      document.getElementById('hotspot-forward').setAttribute(
-        'visible', index < SCENES.length - 1
-      );
+      document.getElementById('hotspot-back').setAttribute('visible', index > 0);
+      document.getElementById('hotspot-forward').setAttribute('visible', index < SCENES.length - 1);
     }
 
     function nextScene() {
@@ -206,15 +177,11 @@
       document.getElementById('hotspot-back').addEventListener('click', prevScene);
     });
 
-    // La primera interacción dispara escena + audio, por la política
-    // de autoplay de los navegadores.
     document.getElementById('enter-screen').addEventListener('click', function () {
       var enterScreen = document.getElementById('enter-screen');
       enterScreen.style.opacity = '0';
       setTimeout(function () { enterScreen.style.display = 'none'; }, 800);
-
       document.getElementById('mute-btn').style.display = 'flex';
-
       showScene(currentIndex);
     });
   </script>
