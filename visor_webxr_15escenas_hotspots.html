@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Caminante de la Niebla — Recorrido 360°</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: Georgia, serif; }
+
+    #enter-screen {
+      position: fixed; inset: 0; background: #000;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; cursor: pointer;
+      transition: opacity 0.8s ease;
+    }
+    #enter-screen .boton {
+      color: rgba(212,175,55,0.9);
+      border: 1px solid rgba(212,175,55,0.5);
+      padding: 12px 32px; font-size: 0.85rem; letter-spacing: 0.15em;
+      border-radius: 4px;
+    }
+    #enter-screen .boton:hover { background: rgba(212,175,55,0.08); }
+
+    #mute-btn {
+      position: fixed; top: 16px; right: 16px;
+      width: 36px; height: 36px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(212,175,55,0.35);
+      border-radius: 50%;
+      color: rgba(212,175,55,0.8);
+      font-size: 0.9rem;
+      display: none;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    .a-enter-vr-button { bottom: 20px !important; right: 20px !important; opacity: 0.6; }
+  </style>
+</head>
+<body>
+
+  <div id="enter-screen">
+    <div class="boton">Tocá para entrar</div>
+  </div>
+
+  <button id="mute-btn" onclick="toggleMute()">🔊</button>
+
+  <a-scene loading-screen="enabled: false" vr-mode-ui="enabled: true">
+    <a-assets>
+      <!--
+        ============================================================
+        IMÁGENES (equirectangular 2:1) — una por escena
+        ============================================================
+      -->
+      <img id="escena1" src="escena1.png">
+      <img id="escena2" src="escena2.png">
+      <img id="escena3" src="escena3.png">
+      <img id="escena4" src="escena4.png">
+      <img id="escena5" src="escena5.png">
+      <img id="escena6" src="escena6.png">
+      <img id="escena7" src="escena7.png">
+      <img id="escena8" src="escena8.png">
+      <img id="escena9" src="escena9.png">
+      <img id="escena10" src="escena10.png">
+      <img id="escena11" src="escena11.png">
+      <img id="escena12" src="escena12.png">
+      <img id="escena13" src="escena13.png">
+      <img id="escena14" src="escena14.png">
+      <img id="escena15" src="escena15.png">
+
+      <!--
+        ============================================================
+        AUDIO AMBIENTE — un archivo .mp3 por escena, loop.
+        Subí audio1.mp3 ... audio15.mp3 al mismo repo.
+        Si dos escenas comparten ambiente, apuntá al mismo archivo.
+        ============================================================
+      -->
+      <audio id="audio1" src="audio1.mp3" preload="auto" loop></audio>
+      <audio id="audio2" src="audio2.mp3" preload="auto" loop></audio>
+      <audio id="audio3" src="audio3.mp3" preload="auto" loop></audio>
+      <audio id="audio4" src="audio4.mp3" preload="auto" loop></audio>
+      <audio id="audio5" src="audio5.mp3" preload="auto" loop></audio>
+      <audio id="audio6" src="audio6.mp3" preload="auto" loop></audio>
+      <audio id="audio7" src="audio7.mp3" preload="auto" loop></audio>
+      <audio id="audio8" src="audio8.mp3" preload="auto" loop></audio>
+      <audio id="audio9" src="audio9.mp3" preload="auto" loop></audio>
+      <audio id="audio10" src="audio10.mp3" preload="auto" loop></audio>
+      <audio id="audio11" src="audio11.mp3" preload="auto" loop></audio>
+      <audio id="audio12" src="audio12.mp3" preload="auto" loop></audio>
+      <audio id="audio13" src="audio13.mp3" preload="auto" loop></audio>
+      <audio id="audio14" src="audio14.mp3" preload="auto" loop></audio>
+      <audio id="audio15" src="audio15.mp3" preload="auto" loop></audio>
+    </a-assets>
+
+    <a-sky id="sky" src="#escena1" rotation="0 -90 0"></a-sky>
+
+    <!--
+      ============================================================
+      HOTSPOTS DE NAVEGACIÓN — flotan sobre el piso.
+      "hotspot-forward" avanza a la siguiente escena.
+      "hotspot-back" vuelve a la anterior.
+      Reposicioná el z si en alguna escena el punto de fuga
+      del piso queda en otro lado (ej. "0 0.01 -2" más cerca).
+      ============================================================
+    -->
+    <a-entity id="hotspot-forward" class="clickable" position="0 0.01 -3"
+      geometry="primitive: ring; radiusInner: 0.18; radiusOuter: 0.28"
+      material="color: #d4af37; opacity: 0.55; side: double; shader: flat"
+      rotation="-90 0 0">
+      <a-animation attribute="scale" dur="1400" direction="alternate"
+        repeat="indefinite" to="1.15 1.15 1.15" easing="ease-in-out-sine"></a-animation>
+    </a-entity>
+
+    <a-entity id="hotspot-back" class="clickable" position="0 0.01 3"
+      geometry="primitive: ring; radiusInner: 0.18; radiusOuter: 0.28"
+      material="color: #d4af37; opacity: 0.3; side: double; shader: flat"
+      rotation="-90 0 0">
+      <a-animation attribute="scale" dur="1400" direction="alternate"
+        repeat="indefinite" to="1.15 1.15 1.15" easing="ease-in-out-sine"></a-animation>
+    </a-entity>
+
+    <a-camera position="0 1.6 0" wasd-controls-enabled="false">
+      <a-cursor fuse="false" color="#d4af37" raycaster="objects: .clickable"></a-cursor>
+    </a-camera>
+  </a-scene>
+
+  <script>
+    // ============================================================
+    // LISTA DE ESCENAS — imgId + audioId en el mismo orden del recorrido
+    // ============================================================
+    var SCENES = [
+      { imgId: 'escena1',  audioId: 'audio1'  },
+      { imgId: 'escena2',  audioId: 'audio2'  },
+      { imgId: 'escena3',  audioId: 'audio3'  },
+      { imgId: 'escena4',  audioId: 'audio4'  },
+      { imgId: 'escena5',  audioId: 'audio5'  },
+      { imgId: 'escena6',  audioId: 'audio6'  },
+      { imgId: 'escena7',  audioId: 'audio7'  },
+      { imgId: 'escena8',  audioId: 'audio8'  },
+      { imgId: 'escena9',  audioId: 'audio9'  },
+      { imgId: 'escena10', audioId: 'audio10' },
+      { imgId: 'escena11', audioId: 'audio11' },
+      { imgId: 'escena12', audioId: 'audio12' },
+      { imgId: 'escena13', audioId: 'audio13' },
+      { imgId: 'escena14', audioId: 'audio14' },
+      { imgId: 'escena15', audioId: 'audio15' }
+    ];
+
+    var currentIndex = 0;
+    var muted = false;
+    var currentAudio = null;
+
+    function showScene(index) {
+      var sky = document.getElementById('sky');
+      var scene = SCENES[index];
+
+      sky.setAttribute('src', '#' + scene.imgId);
+
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      currentAudio = document.getElementById(scene.audioId);
+      if (currentAudio && !muted) {
+        currentAudio.volume = 0.6;
+        currentAudio.play().catch(function () {});
+      }
+
+      // El hotspot de "volver" solo aparece si no es la primera escena
+      document.getElementById('hotspot-back').setAttribute(
+        'visible', index > 0
+      );
+      // El hotspot de "avanzar" solo aparece si no es la última escena
+      document.getElementById('hotspot-forward').setAttribute(
+        'visible', index < SCENES.length - 1
+      );
+    }
+
+    function nextScene() {
+      if (currentIndex < SCENES.length - 1) {
+        currentIndex++;
+        showScene(currentIndex);
+      }
+    }
+
+    function prevScene() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        showScene(currentIndex);
+      }
+    }
+
+    function toggleMute() {
+      muted = !muted;
+      var btn = document.getElementById('mute-btn');
+      btn.textContent = muted ? '🔇' : '🔊';
+      if (muted && currentAudio) currentAudio.pause();
+      if (!muted && currentAudio) currentAudio.play().catch(function(){});
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('hotspot-forward').addEventListener('click', nextScene);
+      document.getElementById('hotspot-back').addEventListener('click', prevScene);
+    });
+
+    // La primera interacción dispara escena + audio, por la política
+    // de autoplay de los navegadores.
+    document.getElementById('enter-screen').addEventListener('click', function () {
+      var enterScreen = document.getElementById('enter-screen');
+      enterScreen.style.opacity = '0';
+      setTimeout(function () { enterScreen.style.display = 'none'; }, 800);
+
+      document.getElementById('mute-btn').style.display = 'flex';
+
+      showScene(currentIndex);
+    });
+  </script>
+
+</body>
+</html>
