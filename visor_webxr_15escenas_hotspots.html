@@ -36,6 +36,20 @@
       z-index: 20;
     }
 
+    #back-btn {
+      position: fixed; top: 16px; left: 16px;
+      width: 36px; height: 36px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(212,175,55,0.35);
+      border-radius: 50%;
+      color: rgba(212,175,55,0.8);
+      font-size: 1.1rem;
+      display: none;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+    }
+
     .a-enter-vr-button { bottom: 20px !important; right: 20px !important; opacity: 0.6; }
   </style>
 </head>
@@ -46,9 +60,15 @@
   </div>
 
   <button id="mute-btn" onclick="toggleMute()">🔊</button>
+  <button id="back-btn" onclick="prevScene()">‹</button>
 
   <a-scene loading-screen="enabled: false" vr-mode-ui="enabled: true">
     <a-assets>
+      <!--
+        ============================================================
+        IMÁGENES (equirectangular 2:1) — una por escena
+        ============================================================
+      -->
       <img id="escena1" src="escena1.png">
       <img id="escena2" src="escena2.png">
       <img id="escena3" src="escena3.png">
@@ -66,6 +86,13 @@
       <img id="escena15" src="escena15.png">
       <img id="escena16" src="escena16.png">
 
+      <!--
+        ============================================================
+        AUDIO AMBIENTE — un archivo .mp3 por escena, loop.
+        Subí audio1.mp3 ... audio15.mp3 al mismo repo.
+        Si dos escenas comparten ambiente, apuntá al mismo archivo.
+        ============================================================
+      -->
       <audio id="audio1" src="audio1.mp3" preload="auto" loop></audio>
       <audio id="audio2" src="audio2.mp3" preload="auto" loop></audio>
       <audio id="audio3" src="audio3.mp3" preload="auto" loop></audio>
@@ -86,6 +113,16 @@
 
     <a-sky id="sky" src="#escena1" rotation="0 -90 0"></a-sky>
 
+    <!--
+      ============================================================
+      HOTSPOT DE NAVEGACIÓN — flota sobre el piso, siempre adelante
+      tuyo. Avanza a la siguiente escena. Para volver atrás, ahora
+      hay un botón fijo en pantalla (arriba a la izquierda) en vez
+      de un segundo anillo — así no se confunden entre sí.
+      Reposicioná el z si en alguna escena el punto de fuga
+      del piso queda en otro lado (ej. "0 0.01 -2" más cerca).
+      ============================================================
+    -->
     <a-entity id="hotspot-forward" class="clickable" position="0 0.01 -3"
       geometry="primitive: ring; radiusInner: 0.18; radiusOuter: 0.28"
       material="color: #d4af37; opacity: 0.55; side: double; shader: flat"
@@ -94,21 +131,21 @@
         repeat="indefinite" to="1.15 1.15 1.15" easing="ease-in-out-sine"></a-animation>
     </a-entity>
 
-    <a-entity id="hotspot-back" class="clickable" position="0 0.01 3"
-      geometry="primitive: ring; radiusInner: 0.18; radiusOuter: 0.28"
-      material="color: #d4af37; opacity: 0.3; side: double; shader: flat"
-      rotation="-90 0 0">
-      <a-animation attribute="scale" dur="1400" direction="alternate"
-        repeat="indefinite" to="1.15 1.15 1.15" easing="ease-in-out-sine"></a-animation>
-    </a-entity>
-
     <a-camera position="0 1.6 0" wasd-controls-enabled="false"></a-camera>
 
+    <!--
+      Cursor basado en la posición real del mouse en pantalla
+      (en vez de seguir hacia dónde mira la cámara). Así el click
+      funciona justo donde ves el anillo, sin tener que centrarlo.
+    -->
     <a-entity cursor="rayOrigin: mouse"
       raycaster="objects: .clickable; far: 20"></a-entity>
   </a-scene>
 
   <script>
+    // ============================================================
+    // LISTA DE ESCENAS — imgId + audioId en el mismo orden del recorrido
+    // ============================================================
     var SCENES = [
       { imgId: 'escena1',  audioId: 'audio1'  },
       { imgId: 'escena2',  audioId: 'audio2'  },
@@ -149,8 +186,12 @@
         currentAudio.play().catch(function () {});
       }
 
-      document.getElementById('hotspot-back').setAttribute('visible', index > 0);
-      document.getElementById('hotspot-forward').setAttribute('visible', index < SCENES.length - 1);
+      // El botón de "volver" (fijo en pantalla) solo aparece si no es la primera escena
+      document.getElementById('back-btn').style.display = (index > 0) ? 'flex' : 'none';
+      // El anillo de "avanzar" (en el piso) solo aparece si no es la última escena
+      document.getElementById('hotspot-forward').setAttribute(
+        'visible', index < SCENES.length - 1
+      );
     }
 
     function nextScene() {
@@ -177,14 +218,17 @@
 
     document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('hotspot-forward').addEventListener('click', nextScene);
-      document.getElementById('hotspot-back').addEventListener('click', prevScene);
     });
 
+    // La primera interacción dispara escena + audio, por la política
+    // de autoplay de los navegadores.
     document.getElementById('enter-screen').addEventListener('click', function () {
       var enterScreen = document.getElementById('enter-screen');
       enterScreen.style.opacity = '0';
       setTimeout(function () { enterScreen.style.display = 'none'; }, 800);
+
       document.getElementById('mute-btn').style.display = 'flex';
+
       showScene(currentIndex);
     });
   </script>
